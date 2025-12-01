@@ -17,15 +17,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-2">Total Income</h2>
-                <p id="totalIncome" class="text-4xl font-bold text-green-600">$0.00</p>
+                <p id="totalIncome" class="text-4xl font-bold text-green-600">Rs 0.00</p>
             </div>
             <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-2">Total Expenses</h2>
-                <p id="totalExpenses" class="text-4xl font-bold text-red-600">$0.00</p>
+                <p id="totalExpenses" class="text-4xl font-bold text-red-600">Rs 0.00</p>
             </div>
             <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-2">Net Balance</h2>
-                <p id="netBalance" class="text-4xl font-bold text-blue-600">$0.00</p>
+                <p id="netBalance" class="text-4xl font-bold text-blue-600">Rs 0.00</p>
             </div>
         </div>
         <!-- Add Transaction Form -->
@@ -229,17 +229,17 @@
                 return `
                     <div class="pb-6 border-b border-gray-200 last:border-b-0">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-xl font-bold text-gray-800">${cat}</span>
-                            <input type="number" id="budget_${cat}" value="${budgetVal}" step="0.01" min="0"
+                            <span class="text-xl font-bold text-gray-800">Rs {cat}</span>
+                            <input type="number" id="budget_Rs {cat}" value="Rs {budgetVal}" step="0.01" min="0"
                                    class="w-28 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-right font-mono">
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                             <div class="bg-gradient-to-r from-green-500 to-blue-600 h-4 rounded-full transition-all duration-500"
-                                 style="width: ${progress}%"></div>
+                                 style="width: Rs {progress}%"></div>
                         </div>
                         <div class="flex justify-between text-sm mt-2 text-gray-600">
-                            <span>Spent: ${formatCurrency(spent)}</span>
-                            <span>Budget: ${formatCurrency(budgetVal)}</span>
+                            <span>Spent: Rs {formatCurrency(spent)}</span>
+                            <span>Budget: Rs {formatCurrency(budgetVal)}</span>
                         </div>
                     </div>
                 `;
@@ -266,17 +266,17 @@
             document.getElementById('noTransactions').classList.add('hidden');
             tbody.innerHTML = filteredTxs.map(t => `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-4">${new Date(t.date).toLocaleDateString()}</td>
+                    <td class="p-4">Rs {new Date(t.date).toLocaleDateString()}</td>
                     <td class="p-4">
-                        <span class="px-3 py-1 rounded-full text-sm font-medium ${t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                            ${t.type.charAt(0).toUpperCase() + t.type.slice(1)}
+                        <span class="px-3 py-1 rounded-full text-sm font-medium Rs {t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            Rs {t.type.charAt(0).toUpperCase() + t.type.slice(1)}
                         </span>
                     </td>
-                    <td class="p-4 font-medium">${t.category}</td>
-                    <td class="p-4 font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">${formatCurrency(t.amount)}</td>
-                    <td class="p-4">${t.description || '-'}</td>
+                    <td class="p-4 font-medium">Rs {t.category}</td>
+                    <td class="p-4 font-bold Rs {t.type === 'income' ? 'text-green-600' : 'text-red-600'}">Rs {formatCurrency(t.amount)}</td>
+                    <td class="p-4">Rs {t.description || '-'}</td>
                     <td class="p-4">
-                        <button onclick="deleteTransaction(${t.id})" class="text-red-600 hover:text-red-800 font-semibold text-sm px-2 py-1 rounded transition">Delete</button>
+                        <button onclick="deleteTransaction(Rs {t.id})" class="text-red-600 hover:text-red-800 font-semibold text-sm px-2 py-1 rounded transition">Delete</button>
                     </td>
                 </tr>
             `).join('');
@@ -327,7 +327,7 @@
         });
         document.getElementById('saveBudgets').addEventListener('click', () => {
             expenseCategories.forEach(cat => {
-                const input = document.getElementById(`budget_${cat}`);
+                const input = document.getElementById(`budget_Rs {cat}`);
                 budgets[cat] = parseFloat(input.value) || 0;
             });
             localStorage.setItem('budgets', JSON.stringify(budgets));
@@ -336,7 +336,7 @@
         });
         // Filters setup
         document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
-            allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            allCategories.map(cat => `<option value="Rs {cat}">Rs {cat}</option>`).join('');
         document.getElementById('applyFilters').addEventListener('click', () => {
             const filters = {
                 type: document.getElementById('filterType').value,
