@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gradient-to-br from-blue-50 to-indigo-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">Finance Tracker</h1>
+            <p class="text-xl text-gray-600">Track your income, expenses, budgets, and trends</p>
+        </header>
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Total Income</h2>
+                <p id="totalIncome" class="text-4xl font-bold text-green-600">$0.00</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Total Expenses</h2>
+                <p id="totalExpenses" class="text-4xl font-bold text-red-600">$0.00</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Net Balance</h2>
+                <p id="netBalance" class="text-4xl font-bold text-blue-600">$0.00</p>
+            </div>
+        </div>
+        <!-- Add Transaction Form -->
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 mb-8">
+            <h2 class="text-3xl font-bold mb-6">Add Transaction</h2>
+            <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <select id="type" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                </select>
+                <select id="category" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="Food">Food</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Bills">Bills</option>
+                    <option value="Other">Other</option>
+                    <option value="Salary">Salary</option>
+                </select>
+                <input type="number" id="amount" placeholder="Amount" step="0.01" required class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <input type="date" id="date" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <input type="text" id="description" placeholder="Description (optional)" class="md:col-span-2 lg:col-span-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition md:col-span-1 lg:col-span-1 lg:col-span-3">Add Transaction</button>
+            </form>
+        </div>
+        <!-- Budgets and Pie Chart -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h2 class="text-3xl font-bold mb-6">Monthly Budgets</h2>
+                <div id="budgetsList" class="space-y-6"></div>
+                <button id="saveBudgets" class="mt-6 bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition w-full">Save All Budgets</button>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h2 class="text-3xl font-bold mb-6">Spending Breakdown (This Month)</h2>
+                <div class="h-80">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Transaction History -->
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 mb-8">
+            <h2 class="text-3xl font-bold mb-6">Transaction History</h2>
+            <div class="flex flex-wrap gap-4 mb-6 p-2 bg-gray-50 rounded-xl">
+                <select id="filterType" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Types</option>
+                    <option value="income">Income Only</option>
+                    <option value="expense">Expenses Only</option>
+                </select>
+                <select id="filterCategory" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Categories</option>
+                </select>
+                <input type="date" id="filterDateFrom" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                <input type="date" id="filterDateTo" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                <button id="applyFilters" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition">Apply</button>
+                <button id="clearFilters" class="bg-gray-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-600 transition">Clear</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table id="historyTable" class="w-full table-auto border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="p-4 text-left font-semibold text-gray-800">Date</th>
+                            <th class="p-4 text-left font-semibold text-gray-800">Type</th>
+                            <th class="p-4 text-left font-semibold text-gray-800">Category</th>
+                            <th class="p-4 text-left font-semibold text-gray-800">Amount</th>
+                            <th class="p-4 text-left font-semibold text-gray-800">Description</th>
+                            <th class="p-4 text-left font-semibold text-gray-800">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTbody" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+            <p id="noTransactions" class="text-center text-gray-500 py-8 hidden">No transactions found. Add some to get started!</p>
+        </div>
+        <!-- Monthly Trends -->
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+            <h2 class="text-3xl font-bold mb-6">Monthly Trends (Last 12 Months)</h2>
+            <div class="h-96">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        const expenseCategories = ['Food', 'Transport', 'Entertainment', 'Shopping', 'Bills', 'Other'];
+        const allCategories = [...expenseCategories, 'Salary'];
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let budgets = JSON.parse(localStorage.getItem('budgets')) || {};
+        let pieChartInstance, lineChartInstance;
+        // Initialize budgets
+        expenseCategories.forEach(cat => {
+            if (budgets[cat] === undefined) budgets[cat] = 0;
+        });
+        localStorage.setItem('budgets', JSON.stringify(budgets));
+        function saveData() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+        function getCurrentMonthDates() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+            return { monthStart, monthEnd };
+        }
+        function getSpentThisMonth(category) {
+            const { monthStart, monthEnd } = getCurrentMonthDates();
+            return transactions
+                .filter(t => t.type === 'expense' && t.category === category &&
+                             new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
+                .reduce((sum, t) => sum + t.amount, 0);
+        }
+        function updateSummary() {
+            const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('netBalance').textContent = formatCurrency(totalIncome - totalExpenses);
+        }
+        function updatePieChart() {
+            const data = expenseCategories.map(cat => getSpentThisMonth(cat));
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: expenseCategories,
+                    datasets: [{
+                        data,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+        function getMonthlyData(type) {
+            const now = new Date();
+            const data = [];
+            for (let i = 11; i >= 0; i--) {
+                const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+                const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
+                const sum = transactions
+                    .filter(t => t.type === type &&
+                                 new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
+                    .reduce((s, t) => s + t.amount, 0);
+                data.push(sum);
+            }
+            return data;
+        }
+        function updateLineChart() {
+            const now = new Date();
+            const labels = [];
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                labels.push(d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+            }
+            const incomeData = getMonthlyData('income');
+            const expenseData = getMonthlyData('expense');
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            if (lineChartInstance) lineChartInstance.destroy();
+            lineChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: incomeData,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Expenses',
+                            data: expenseData,
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+        function updateBudgetsDisplay() {
+            const container = document.getElementById('budgetsList');
+            container.innerHTML = expenseCategories.map(cat => {
+                const spent = getSpentThisMonth(cat);
+                const budgetVal = budgets[cat];
+                const progress = budgetVal > 0 ? Math.min((spent / budgetVal) * 100, 100) : 0;
+                return `
+                    <div class="pb-6 border-b border-gray-200 last:border-b-0">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xl font-bold text-gray-800">${cat}</span>
+                            <input type="number" id="budget_${cat}" value="${budgetVal}" step="0.01" min="0"
+                                   class="w-28 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-right font-mono">
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                            <div class="bg-gradient-to-r from-green-500 to-blue-600 h-4 rounded-full transition-all duration-500"
+                                 style="width: ${progress}%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm mt-2 text-gray-600">
+                            <span>Spent: ${formatCurrency(spent)}</span>
+                            <span>Budget: ${formatCurrency(budgetVal)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        function updateHistory(filters = null) {
+            const tbody = document.getElementById('historyTbody');
+            let filteredTxs = transactions;
+            if (filters) {
+                filteredTxs = filteredTxs.filter(t => {
+                    if (filters.type && t.type !== filters.type) return false;
+                    if (filters.category && t.category !== filters.category) return false;
+                    const tDate = new Date(t.date);
+                    if (filters.dateFrom && tDate < new Date(filters.dateFrom)) return false;
+                    if (filters.dateTo && tDate > new Date(filters.dateTo)) return false;
+                    return true;
+                });
+            }
+            if (filteredTxs.length === 0) {
+                document.getElementById('noTransactions').classList.remove('hidden');
+                tbody.innerHTML = '';
+                return;
+            }
+            document.getElementById('noTransactions').classList.add('hidden');
+            tbody.innerHTML = filteredTxs.map(t => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-4">${new Date(t.date).toLocaleDateString()}</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${t.type.charAt(0).toUpperCase() + t.type.slice(1)}
+                        </span>
+                    </td>
+                    <td class="p-4 font-medium">${t.category}</td>
+                    <td class="p-4 font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">${formatCurrency(t.amount)}</td>
+                    <td class="p-4">${t.description || '-'}</td>
+                    <td class="p-4">
+                        <button onclick="deleteTransaction(${t.id})" class="text-red-600 hover:text-red-800 font-semibold text-sm px-2 py-1 rounded transition">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        function addTransaction(type, category, amount, date, description) {
+            transactions.unshift({
+                id: Date.now(),
+                type,
+                category,
+                amount: parseFloat(amount),
+                date,
+                description: description.trim() || ''
+            });
+            saveData();
+            updateSummary();
+            updatePieChart();
+            updateBudgetsDisplay();
+            updateLineChart();
+            updateHistory();
+            document.getElementById('transactionForm').reset();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        }
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveData();
+                updateSummary();
+                updatePieChart();
+                updateBudgetsDisplay();
+                updateLineChart();
+                updateHistory();
+            }
+        }
+        // Event Listeners
+        document.getElementById('transactionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const type = document.getElementById('type').value;
+            const category = document.getElementById('category').value;
+            const amount = document.getElementById('amount').value;
+            const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+            const description = document.getElementById('description').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('Please enter a valid amount greater than 0.');
+                return;
+            }
+            addTransaction(type, category, amount, date, description);
+        });
+        document.getElementById('saveBudgets').addEventListener('click', () => {
+            expenseCategories.forEach(cat => {
+                const input = document.getElementById(`budget_${cat}`);
+                budgets[cat] = parseFloat(input.value) || 0;
+            });
+            localStorage.setItem('budgets', JSON.stringify(budgets));
+            updateBudgetsDisplay();
+            updatePieChart();
+        });
+        // Filters setup
+        document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
+            allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        document.getElementById('applyFilters').addEventListener('click', () => {
+            const filters = {
+                type: document.getElementById('filterType').value,
+                category: document.getElementById('filterCategory').value,
+                dateFrom: document.getElementById('filterDateFrom').value,
+                dateTo: document.getElementById('filterDateTo').value
+            };
+            updateHistory(filters);
+        });
+        document.getElementById('clearFilters').addEventListener('click', () => {
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            updateHistory();
+        });
+        // Init
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        updateSummary();
+        updatePieChart();
+        updateBudgetsDisplay();
+        updateHistory();
+        updateLineChart();
+        window.deleteTransaction = deleteTransaction;
+    </script>
+</body>
+</html>
